@@ -109,7 +109,7 @@ class _DetailsTaskState extends State<DetailsTask> {
   _content() {
     return SingleChildScrollView(
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+        margin: EdgeInsets.symmetric(horizontal: 7, vertical: 10),
         padding: EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(25)),
