@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+
 import 'package:intl/intl.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
 import 'package:swani/models/Task.dart';
@@ -23,6 +24,12 @@ class _DetailsTaskState extends State<DetailsTask> {
   final TextEditingController _controllerDescription = TextEditingController();
   final TextEditingController _controllerStartdate = TextEditingController();
   final TextEditingController _controllerEnddate = TextEditingController();
+
+  String title;
+  String subtitle;
+  String descrption;
+  String startDate;
+  String endate;
   Future<Task> _futureTask;
 
   bool isEditing = false;
@@ -93,6 +100,7 @@ class _DetailsTaskState extends State<DetailsTask> {
 
   _details() {
     return Container(
+
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topRight,
@@ -134,41 +142,37 @@ class _DetailsTaskState extends State<DetailsTask> {
                   ? TextField(
                       onChanged: (text) {
                         setState(() {
-                        _controllerTitle.text= text;
+                          _controllerTitle.text = text;
                         });
                       },
-
                       controller:
                           TextEditingController(text: _controllerTitle.text),
                     )
                   : Text(widget.task.title),
               SizedBox(height: 16),
-              Text("Subtítulo:"),
-              isEditing
-                  ? TextField(
-                      decoration: InputDecoration(icon: Icon(Icons.abc)),
-                      onChanged: (text) {
-                        setState(() {
-                          widget.task.subtitle = text;
-                        });
-                      },
-                      controller:
-                          TextEditingController(text: widget.task.subtitle),
-                    )
-                  : Text(widget.task.subtitle),
-              SizedBox(height: 16),
-              Text("Descripción:"),
-              isEditing
-                  ? TextField(
-                      onChanged: (text) {
-                        setState(() {
-                          widget.task.description = text;
-                        });
-                      },
-                      controller:
-                          TextEditingController(text: widget.task.description),
-                    )
-                  : Text(widget.task.description),
+              buildEditableTextFieldSubtitle(
+                "Subtítulo:",
+                _controllerSubtitle,
+                widget.task.subtitle,
+                icon: Icons.subtitles,
+                onChanged: (text) {
+                  if (validateInput(text)) {
+                    _controllerSubtitle.text = text;
+                  }
+                  widget.task.subtitle = text;
+                },
+              ),
+              buildEditableTextFieldd(
+                "Descripción:",
+                _controllerDescription,
+                widget.task.description,
+                onChanged: (text) {
+                  if (validateInput(text)) {
+                    _controllerDescription.text = text;
+                  }
+                  widget.task.description = text;
+                },
+              ),
               SizedBox(height: 16),
               Row(
                 children: [
@@ -191,13 +195,15 @@ class _DetailsTaskState extends State<DetailsTask> {
                 onPressed: () {
                   setState(() {
                     isEditing = !isEditing;
-                    task_provider.updateTask(
-                        widget.task.id,
-                        _controllerTitle.text,
-                        _controllerSubtitle.text,
-                        _controllerDescription.text,
-                        _controllerStartdate.text,
-                        _controllerEnddate.text);
+
+                    title = _controllerTitle.text;
+                    subtitle = _controllerSubtitle.text;
+                    descrption = _controllerDescription.text;
+                    startDate = _controllerStartdate.text;
+                    endate = _controllerEnddate.text;
+                    task_provider.updateTask(widget.task.id, title, subtitle,
+                        descrption, startDate, endate);
+                    if (!isEditing) showUpdatedDialog();
                   });
                 },
                 child: Text(isEditing ? "Guardar" : "Editar"),
@@ -242,6 +248,28 @@ class _DetailsTaskState extends State<DetailsTask> {
     }
   }
 
+  Widget buildEditableTextFieldSubtitle(
+      String label, TextEditingController controller, String value,
+      {IconData icon, ValueChanged<String> onChanged}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label),
+        isEditing
+            ? TextField(
+                onChanged: onChanged,
+                controller: controller,
+                decoration: icon != null
+                    ? InputDecoration(
+                        prefixIcon: Icon(icon),
+                      )
+                    : null,
+              )
+            : Text(value),
+      ],
+    );
+  }
+
   Future<void> showDeletedDialog() async {
     return showDialog<void>(
       context: context,
@@ -264,14 +292,12 @@ class _DetailsTaskState extends State<DetailsTask> {
                 );
 
                 setState(() {
-
                   pr.show();
                   Future.delayed(Duration(seconds: 2), () {
                     pr.hide();
                     // Aquí puedes agregar lógica para borrar el elemento y mostrar el ID borrado.
                     Navigator.pushNamed(context, "/");
                   });
-
                 });
               },
             ),
@@ -279,5 +305,66 @@ class _DetailsTaskState extends State<DetailsTask> {
         );
       },
     );
+  }
+
+  showUpdatedDialog() {
+    return showDialog<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Elemento modificado'),
+            content: Text(
+                'El elemento ${widget.task.title} se ha modificado con éxito.'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  pr = ProgressDialog(context);
+                  pr.update(
+                      message: "Espere ..", progress: 54, maxProgress: 80);
+                  pr.style(
+                    message: '...',
+                    progressWidget: CircularProgressIndicator(),
+                  );
+
+                  setState(() {
+                    pr.show();
+                    Future.delayed(Duration(seconds: 2), () {
+                      pr.hide();
+                      // Aquí puedes agregar lógica para borrar el elemento y mostrar el ID borrado.
+                      Navigator.pushNamed(context, "/");
+                    });
+                  });
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  Widget buildEditableTextFieldd(
+      String label, TextEditingController controller, String value,
+      {ValueChanged<String> onChanged}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label),
+        isEditing
+            ? TextField(
+                onChanged: onChanged,
+                controller: controller,
+              )
+            : Text(value),
+        if (!validateInput(controller.text) && isEditing)
+          Text(
+            "El campo no puede estar vacío",
+            style: TextStyle(color: Colors.red),
+          ),
+      ],
+    );
+  }
+
+  bool validateInput(String text) {
+    return text.trim().isNotEmpty;
   }
 }

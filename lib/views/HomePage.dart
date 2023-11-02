@@ -18,17 +18,19 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePage_State extends State<HomePage> {
+  String dataStart = '';
+  String dataEnd = '';
 
-
+  List<Task>_tasks=[];
   @override
   void initState() {
     // TODO: implement initState
 
     super.initState();
-
-    task_provider.getTasks();
+    final  _tasks = task_provider.getTasks();
 
   }
+
   TextEditingController textEditingController_title = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   TextEditingController textEditingController_subtitle =
@@ -37,16 +39,20 @@ class HomePage_State extends State<HomePage> {
   TextEditingController dateFinTaskinput = TextEditingController();
   TextEditingController textEditingController_description =
       TextEditingController();
+
+
   Provider task_provider = new Provider();
   @override
   Widget build(BuildContext context) {
-    final _tasks=    task_provider.getTasks();
+    final  _tasks = task_provider.getTasks();
     return Scaffold(
         appBar: AppBar(),
         drawer: Menu(),
         body: ListView(
           children: [
-            SizedBox(height: 8,),
+            SizedBox(
+              height: 18,
+            ),
             _taskList(),
             SizedBox(
               height: 50,
@@ -65,12 +71,13 @@ class HomePage_State extends State<HomePage> {
   }
 
   _taskList() {
-    final _tasks=    task_provider.getTasks();
+
 
     return Container(
-
+      margin: EdgeInsets.only(top: 15),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(25),bottomRight: Radius.circular(25)),
+        borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(25), bottomRight: Radius.circular(25)),
         gradient: LinearGradient(
           begin: Alignment.topRight,
           end: Alignment.bottomLeft,
@@ -83,7 +90,7 @@ class HomePage_State extends State<HomePage> {
       width: double.infinity,
       height: 500,
       child: FutureBuilder(
-        future:_tasks,
+        future: task_provider.getTasks(),
         builder: (BuildContext context, AsyncSnapshot<List<Task>> snapshot) {
           if (snapshot.hasData) {
             return tasks(snapshot.data);
@@ -98,13 +105,14 @@ class HomePage_State extends State<HomePage> {
   }
 
   _taskList2() {
-    final _tasks=    task_provider.getTasks();
+    final _tasks = task_provider.getTasks();
+
     return Container(
       width: double.infinity,
       color: Color.fromARGB(45, 51, 51, 50),
       height: 300,
       child: FutureBuilder(
-        future:_tasks,
+        future: _tasks,
         builder: (BuildContext context, AsyncSnapshot<List<Task>> snapshot) {
           if (snapshot.hasData) {
             return _CategoryTask(snapshot.data);
@@ -121,18 +129,23 @@ class HomePage_State extends State<HomePage> {
   FocusNode focusNode = FocusNode();
 
   tasks(List<Task> data) {
-    final _tasks=    data;
+    _tasks = data;
     return ListView.builder(
       itemCount: _tasks.length,
       itemBuilder: (BuildContext context, int index) {
+        dataStart = data[index].start_date.toString().toLowerCase();
+        dataEnd = data[index].end_date.toString().toLowerCase();
+        print(dataStart);
+        Widget dateTag = DateTagger.tagDateStatus(dataStart, dataEnd);
+
         return Container(
           margin: EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-        borderRadius: BorderRadius.all(Radius.circular(29)),
-        ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(29)),
+          ),
           width: double.infinity,
           child: Card(
-           // clipBehavior: Clip.none,
+            // clipBehavior: Clip.none,
 
             color: Colors.transparent,
             elevation: 2,
@@ -146,21 +159,25 @@ class HomePage_State extends State<HomePage> {
                   );
                 },
                 title: Container(
-                  width: double.infinity,
-                  child:Row(children: [
-
-                    Expanded(
-                      flex: 1,
-                      child: Text(
-                        _tasks[index].title,
-                        style: TextStyle(fontSize: 18, color: Colors.white38),
-                      ),)
-                  ],)
-                ),
+                    width: double.infinity,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            _tasks[index].title,
+                            style:
+                                TextStyle(fontSize: 18, color: Colors.white38),
+                          ),
+                        )
+                      ],
+                    )),
                 trailing: IconButton(
                     icon: Icon(Icons.close),
                     onPressed: () {
-                      _tasks.remove(data[index]);
+setState(() {
+  data.removeAt(index);
+});
                     }),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -168,54 +185,50 @@ class HomePage_State extends State<HomePage> {
                     Row(
                       children: [
                         Text("Subtitle :"),
-                    Expanded(
-
-                      flex: 1,
-                      child:Text(data[index].subtitle,
-                            style:
-                            TextStyle(fontSize: 11, color: Colors.white)),
-                    ) ],
+                        Expanded(
+                          flex: 1,
+                          child: Text(data[index].subtitle,
+                              style:
+                                  TextStyle(fontSize: 11, color: Colors.white)),
+                        )
+                      ],
                     ),
                     Row(
                       children: [
                         Text("Description :"),
                         Expanded(
-
-
                           flex: 1,
-                          child:Text(
-
-                            data[index].description,
-                            style:
-                            TextStyle(fontSize: 11, color: Colors.white)),
-                        ) ],
+                          child: Text(data[index].description,
+                              style:
+                                  TextStyle(fontSize: 11, color: Colors.white)),
+                        )
+                      ],
                     ),
-
-
-
-
                     Row(
-                      children: [
-                        Text("Date init Task :"),
-                       Expanded(
-                         flex: 1,
-                         child: Text(
-                         data[index].start_date.toString(),
-                         style: TextStyle(
-                             color: Color.fromARGB(255, 5, 165, 240)),
-                       ),)
-                      ]
+                      children: [dateTag],
                     ),
+                    Row(children: [
+                      Text("Date init Task :"),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          data[index].start_date.toString(),
+                          style: TextStyle(
+                              color: Color.fromARGB(255, 5, 165, 240)),
+                        ),
+                      )
+                    ]),
                     Row(
                       children: [
                         Text("Date fin Task :"),
-                     Expanded(
-                       flex: 1,
-                       child:  Text(
-                       data[index].end_date.toString(),
-                       style: TextStyle(
-                           color: Color.fromARGB(255, 5, 165, 240)),
-                     ), )
+                        Expanded(
+                          flex: 1,
+                          child: Text(
+                            data[index].end_date.toString(),
+                            style: TextStyle(
+                                color: Color.fromARGB(255, 5, 165, 240)),
+                          ),
+                        )
                       ],
                     ),
                     SizedBox(
@@ -247,35 +260,32 @@ class HomePage_State extends State<HomePage> {
   }
 
   _CategoryTask(List<Task> data) {
-    return  ListView.builder(
-          itemCount: data.length,
-          scrollDirection: Axis.horizontal,
-          itemBuilder: (context, index) {
-            return SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 9,vertical: 12),
-                color: Colors.cyanAccent,
-                width: 150,
-                height: 200,
-                child: Card(
-                  color: Color.fromARGB(20, 46, 45, 45),
-                  elevation: 8,
-                  child:Column(
-                    children: [
-                      Text(data[index].title),
-                      Row(children: [
-                        Text(data[index].subtitle)
-                      ],)
-                    ],
-
-
-                  ),
-
-            ),
-              ));
-          },
-        );
+    return ListView.builder(
+      itemCount: data.length,
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (context, index) {
+        return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Container(
+              margin: EdgeInsets.symmetric(horizontal: 9, vertical: 12),
+              color: Colors.cyanAccent,
+              width: 150,
+              height: 200,
+              child: Card(
+                color: Color.fromARGB(20, 46, 45, 45),
+                elevation: 8,
+                child: Column(
+                  children: [
+                    Text(data[index].title),
+                    Row(
+                      children: [Expanded(child: Text(data[index].subtitle))],
+                    )
+                  ],
+                ),
+              ),
+            ));
+      },
+    );
   }
 
   DateTime selectedDayI = new DateTime(12);
@@ -522,9 +532,7 @@ class HomePage_State extends State<HomePage> {
                                         return AlertDialog(
                                           content: Text(
                                               "Se ha registardo correctamente " +
-                                                  DateTime.now().toString() +
-                                                  task_provider.isADD
-                                                      .toString()),
+                                                  DateTime.now().toString()),
                                         );
                                       });
                                 } else {
@@ -581,13 +589,11 @@ class HomePage_State extends State<HomePage> {
                   style: TextButton.styleFrom(
                       primary: Colors.white, // foreground
                       backgroundColor: Colors.red),
-                  onPressed: ()  {
-
-                      //Navigator.pop(context);
-                      // getAllUserDetails();
-                      task_provider.deleteTask(taskId);
-                      //   _showSuccessSnackBar(   'User Detail Deleted Success');
-
+                  onPressed: () {
+                    //Navigator.pop(context);
+                    // getAllUserDetails();
+                    task_provider.deleteTask(taskId);
+                    //   _showSuccessSnackBar(   'User Detail Deleted Success');
                   },
                   child: const Text('Delete')),
               TextButton(
@@ -601,5 +607,47 @@ class HomePage_State extends State<HomePage> {
             ],
           );
         });
+  }
+}
+
+class DateTagger {
+  static Widget tagDateStatus(String startDateStr, String endDateStr) {
+    DateTime now = DateTime.now();
+    DateTime startDate = DateTime.parse(startDateStr);
+    DateTime endDate = DateTime.parse(startDate.toString());
+
+    if (endDate.isBefore(now)) {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.green, // Puedes personalizar el color como desees
+          borderRadius:
+              BorderRadius.circular(4.0), // Personaliza la forma y estilo
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        child: Text(
+          'Valid',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12.0, // Personaliza el estilo del texto
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.redAccent, // Puedes personalizar el color como desees
+          borderRadius:
+              BorderRadius.circular(4.0), // Personaliza la forma y estilo
+        ),
+        padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        child: Text(
+          'Expirado',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 12.0, // Personaliza el estilo del texto
+          ),
+        ),
+      );
+    }
   }
 }

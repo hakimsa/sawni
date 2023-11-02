@@ -40,6 +40,7 @@ dependencies:
   table_calendar:
   intl: ^0.17.0
   http:
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
